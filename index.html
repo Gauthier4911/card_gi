@@ -163,7 +163,7 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:'DM San
     <div class="wave-box"><div class="wave-num">2</div><div class="wave-lbl">Vague 2 / Wave 2</div><div class="wave-cat">Culture &amp; Traditions</div></div>
     <div class="wave-box"><div class="wave-num">3</div><div class="wave-lbl">Vague 3 / Wave 3</div><div class="wave-cat">Sport &amp; Régions<br>Sport &amp; Regions</div></div>
   </div>
-  <button class="btn-start" onclick="initQuiz()">▶ &nbsp; Commencer / Start</button>
+  <button class="btn-start" onclick="homeStart()">▶ &nbsp; Commencer / Start</button>
 </div>
 
 <!-- INTRO VAGUE -->
@@ -223,7 +223,7 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:'DM San
   </div>
   <div class="reveal-list" id="reveal-list"></div>
   <div class="reveal-footer">
-    <button class="btn-continue" id="btn-continue" onclick="afterReveal()">→</button>
+    <button class="btn-continue" id="btn-continue">→</button>
   </div>
 </div>
 
@@ -247,7 +247,146 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:'DM San
   </div>
 </div>
 
+<!-- PIN MODAL -->
+<div id="pin-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.85);z-index:999;align-items:center;justify-content:center;padding:24px;">
+  <div style="background:#141f1a;border:1px solid rgba(255,255,255,0.12);border-radius:20px;padding:28px 24px;width:100%;max-width:340px;text-align:center;">
+    <div style="font-size:32px;margin-bottom:12px;">🔒</div>
+    <div style="font-family:'Playfair Display',serif;font-size:20px;color:#FCD116;margin-bottom:6px;" id="pin-title">Code Animateur</div>
+    <div style="font-size:13px;color:#7a9088;margin-bottom:20px;line-height:1.5;" id="pin-sub">Seul l'animateur peut débloquer la suite.<br><em>Only the host can unlock the next stage.</em></div>
+    <!-- Affichage du code saisi -->
+    <div style="display:flex;gap:10px;justify-content:center;margin-bottom:20px;" id="pin-dots">
+      <div class="pin-dot" id="pd0"></div>
+      <div class="pin-dot" id="pd1"></div>
+      <div class="pin-dot" id="pd2"></div>
+      <div class="pin-dot" id="pd3"></div>
+    </div>
+    <!-- Clavier numérique -->
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:16px;" id="pin-keyboard">
+      <button class="pin-key" onclick="pinPress('1')">1</button>
+      <button class="pin-key" onclick="pinPress('2')">2</button>
+      <button class="pin-key" onclick="pinPress('3')">3</button>
+      <button class="pin-key" onclick="pinPress('4')">4</button>
+      <button class="pin-key" onclick="pinPress('5')">5</button>
+      <button class="pin-key" onclick="pinPress('6')">6</button>
+      <button class="pin-key" onclick="pinPress('7')">7</button>
+      <button class="pin-key" onclick="pinPress('8')">8</button>
+      <button class="pin-key" onclick="pinPress('9')">9</button>
+      <button class="pin-key pin-clear" onclick="pinClear()">✕</button>
+      <button class="pin-key" onclick="pinPress('0')">0</button>
+      <button class="pin-key pin-ok" onclick="pinConfirm()">✓</button>
+    </div>
+    <div id="pin-error" style="font-size:12px;color:#f07070;min-height:18px;animation:blink 0.5s ease;"></div>
+  </div>
+</div>
+
+<style>
+.pin-dot{width:14px;height:14px;border-radius:50%;background:rgba(255,255,255,0.1);border:1.5px solid rgba(255,255,255,0.2);transition:all .2s;}
+.pin-dot.filled{background:#FCD116;border-color:#FCD116;box-shadow:0 0 8px rgba(252,209,22,0.5);}
+.pin-dot.error{background:#CE1126;border-color:#CE1126;}
+.pin-key{background:#1a2b24;border:1px solid rgba(255,255,255,0.1);border-radius:12px;color:#f0f0ee;font-size:20px;font-weight:600;padding:16px;cursor:pointer;font-family:'DM Sans',sans-serif;transition:background .15s,transform .1s;}
+.pin-key:active{background:rgba(255,255,255,0.1);transform:scale(0.95);}
+.pin-clear{color:#f07070;font-size:16px;}
+.pin-ok{background:#006633;color:#fff;border-color:#006633;}
+.pin-ok:active{background:#004d26;}
+</style>
+
 <script>
+// ── CODES SECRETS ANIMATEUR ──
+// Code 1 : pour lancer la Vague 1
+// Code 2 : pour lancer la Vague 2 (après révélation Vague 1)
+// Code 3 : pour lancer la Vague 3 (après révélation Vague 2)
+const PINS = {
+  0: '1972', // Vague 1 — année de l'Unité Nationale
+  1: '4900', // Vague 2
+  2: '2035', // Vague 3
+};
+
+let pinAction = null, pinBuffer = '';
+
+function getPinLabel() {
+  // waveIdx = vague en cours ou à venir
+  if (pinAction === 'wave') {
+    const labels = [
+      ['Lancer Vague 1', 'Start Wave 1'],
+      ['Lancer Vague 2', 'Start Wave 2'],
+      ['Lancer Vague 3', 'Start Wave 3'],
+    ];
+    return labels[waveIdx] || ['Débloquer', 'Unlock'];
+  } else {
+    // afterReveal = on est sur la page révélation, on veut passer à la vague suivante
+    const labels = [
+      ['Passer à la Vague 2', 'Go to Wave 2'],
+      ['Passer à la Vague 3', 'Go to Wave 3'],
+      ['Voir le Résultat Final', 'See Final Result'],
+    ];
+    return labels[waveIdx] || ['Continuer', 'Continue'];
+  }
+}
+
+function getCurrentPin() {
+  if (pinAction === 'wave') return PINS[waveIdx];
+  return PINS[waveIdx + 1];
+}
+
+function askPin(action) {
+  pinAction = action;
+  pinBuffer = '';
+  updatePinDots();
+  document.getElementById('pin-error').textContent = '';
+  const [fr, en] = getPinLabel();
+  document.getElementById('pin-title').textContent = fr;
+  document.getElementById('pin-sub').innerHTML = `${en}<br><em style="color:rgba(255,255,255,0.3);font-size:11px;">Entrez le code animateur / Enter host code</em>`;
+  document.getElementById('pin-modal').style.display = 'flex';
+}
+
+function pinPress(digit) {
+  if (pinBuffer.length >= 4) return;
+  pinBuffer += digit;
+  updatePinDots();
+  if (pinBuffer.length === 4) setTimeout(pinConfirm, 200);
+}
+
+function pinClear() {
+  pinBuffer = pinBuffer.slice(0, -1);
+  updatePinDots();
+  document.getElementById('pin-error').textContent = '';
+}
+
+function pinConfirm() {
+  const expected = getCurrentPin();
+  if (pinBuffer === expected) {
+    // ✅ Succès — flash vert
+    for(let i=0;i<4;i++) {
+      document.getElementById('pd'+i).classList.add('filled');
+      document.getElementById('pd'+i).classList.remove('error');
+    }
+    setTimeout(() => {
+      document.getElementById('pin-modal').style.display = 'none';
+      pinBuffer = ''; updatePinDots();
+      if (pinAction === 'wave') { showWaveIntro(); } else { afterReveal(); }
+    }, 450);
+  } else {
+    // ❌ Erreur — flash rouge
+    for(let i=0;i<4;i++) {
+      document.getElementById('pd'+i).classList.add('error');
+      document.getElementById('pd'+i).classList.remove('filled');
+    }
+    document.getElementById('pin-error').textContent = '❌ Code incorrect / Wrong code';
+    setTimeout(() => {
+      pinBuffer = ''; updatePinDots();
+      for(let i=0;i<4;i++) document.getElementById('pd'+i).classList.remove('error');
+    }, 900);
+  }
+}
+
+function updatePinDots() {
+  for(let i=0;i<4;i++){
+    const d = document.getElementById('pd'+i);
+    d.classList.toggle('filled', i < pinBuffer.length);
+    d.classList.remove('error');
+  }
+}
+
 const TIMER_DURATION = 30;
 const CIRCUMFERENCE = 2 * Math.PI * 30;
 
@@ -530,11 +669,18 @@ function setLang(l){
   document.querySelectorAll('.opt-en').forEach(e=>e.style.display=l==='en'?'block':'none');
 }
 
-function initQuiz(){
-  waveIdx=0;totalScore=0;currentLang='fr';
+function homeStart(){
+  // Initialise tout puis demande le code 1
+  waveIdx=0; totalScore=0; currentLang='fr';
   Object.keys(catScore).forEach(k=>{catScore[k]=0;catTotal[k]=0;});
   WAVES.forEach(w=>w.questions.forEach(q=>catTotal[q.cat]++));
-  showWaveIntro();
+  askPin('wave');
+}
+
+function initQuiz(){
+  waveIdx=0; totalScore=0; currentLang='fr';
+  Object.keys(catScore).forEach(k=>{catScore[k]=0;catTotal[k]=0;});
+  WAVES.forEach(w=>w.questions.forEach(q=>catTotal[q.cat]++));
 }
 
 function showWaveIntro(){
@@ -638,11 +784,21 @@ function showReveal(){
   document.getElementById('rev-wave').textContent=`Q${waveIdx*10+1}–${waveIdx*10+10}`;
   document.getElementById('rev-score-val').textContent=`${waveScore} / 10`;
   const btn=document.getElementById('btn-continue');
-  btn.textContent=waveIdx<2?`Vague ${waveIdx+2} / Wave ${waveIdx+2} →`:'🏆 Résultat Final / Final Result';
+  if(waveIdx < 2){
+    btn.textContent=`🔐 Vague ${waveIdx+2} / Wave ${waveIdx+2}`;
+    btn.onclick = () => askPin('reveal');
+  } else {
+    btn.textContent='🏆 Résultat Final / Final Result';
+    btn.onclick = () => afterReveal();
+  }
   show('s-reveal');
 }
 
-function afterReveal(){waveIdx++;if(waveIdx<3)showWaveIntro();else showFinal();}
+function afterReveal(){
+  waveIdx++;
+  if(waveIdx < 3) showWaveIntro();
+  else showFinal();
+}
 
 function showFinal(){
   show('s-final');
