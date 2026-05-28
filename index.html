@@ -1,57 +1,679 @@
+
 <!DOCTYPE html>
-<html lang="en">
+<html lang="fr">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="css/all.min.css">
-    <link rel="stylesheet" href="css/bootstrap.min.css">
-    <link rel="stylesheet" href="css/index.css">
-    <title>Git intro</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>Quiz Gala — Cameroun 20 Mai</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;1,700&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --vert:#007A5E;--vert-d:#005A45;--vert-l:#00A876;
+  --rouge:#CE1126;--jaune:#FCD116;--jaune-d:#C8900A;
+  --bg:#0d1410;--card:#141f1a;--card2:#1a2b24;
+  --border:rgba(255,255,255,0.09);--text:#f0f0ee;--muted:#7a9088;--hint:#3a5048;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+html,body{height:100%;background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;overflow:hidden;}
+.screen{position:fixed;inset:0;display:none;flex-direction:column;align-items:center;justify-content:center;padding:20px;}
+.screen.active{display:flex;}
+
+/* ── ACCUEIL ── */
+#s-home{gap:0;text-align:center;}
+.flag{display:flex;border-radius:8px;overflow:hidden;box-shadow:0 6px 30px rgba(0,0,0,0.5);margin-bottom:24px;}
+.flag span{width:54px;height:86px;}
+.fv{background:var(--vert);}
+.fr{background:var(--rouge);}
+.fy{background:var(--jaune);display:flex;align-items:center;justify-content:center;font-size:32px;color:var(--rouge);}
+.home-title{font-family:'Playfair Display',serif;font-size:30px;color:var(--jaune);margin-bottom:4px;}
+.home-title-en{font-family:'Playfair Display',serif;font-size:16px;color:rgba(252,209,22,0.55);margin-bottom:6px;font-style:italic;}
+.home-sub{font-size:13px;color:var(--muted);margin-bottom:2px;}
+.home-date{font-size:12px;color:var(--vert-l);letter-spacing:1px;font-weight:500;margin-bottom:24px;}
+.waves-info{display:flex;gap:10px;margin-bottom:24px;width:100%;}
+.wave-box{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:14px 10px;text-align:center;flex:1;}
+.wave-num{font-size:26px;font-weight:600;color:var(--jaune);}
+.wave-lbl{font-size:11px;color:var(--muted);margin-top:2px;}
+.wave-cat{font-size:9px;color:var(--vert-l);margin-top:3px;font-weight:500;line-height:1.4;}
+.btn-start{background:var(--vert);color:#fff;border:none;border-radius:50px;padding:16px 52px;font-size:17px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;box-shadow:0 6px 28px rgba(0,122,94,0.5);transition:transform .15s;}
+.btn-start:active{transform:scale(.97);}
+
+/* ── INTRO VAGUE ── */
+#s-wave-intro{gap:18px;text-align:center;}
+.wave-intro-badge{background:rgba(0,122,94,0.2);border:1px solid rgba(0,200,140,0.3);border-radius:20px;padding:6px 20px;font-size:12px;color:var(--vert-l);letter-spacing:2px;font-weight:600;}
+.wave-intro-title{font-family:'Playfair Display',serif;font-size:38px;color:var(--jaune);line-height:1.1;}
+.wave-intro-title-en{font-family:'Playfair Display',serif;font-size:20px;color:rgba(252,209,22,0.5);font-style:italic;}
+.wave-intro-sub{font-size:14px;color:var(--muted);max-width:340px;line-height:1.6;}
+.wave-intro-cats{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;}
+.cat-pill{padding:5px 14px;border-radius:20px;font-size:11px;font-weight:500;border:1px solid rgba(255,255,255,0.15);background:rgba(255,255,255,0.05);color:var(--text);}
+.btn-go{background:var(--vert);color:#fff;border:none;border-radius:50px;padding:15px 50px;font-size:16px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;box-shadow:0 4px 20px rgba(0,122,94,0.4);}
+
+/* ── QUESTION ── */
+#s-question{justify-content:flex-start;padding:14px 18px 18px;}
+.q-topbar{width:100%;display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;}
+.q-wave-lbl{font-size:11px;color:var(--muted);}
+.q-counter{font-size:13px;font-weight:600;color:var(--text);}
+.prog-bar{width:100%;height:3px;background:var(--border);border-radius:2px;margin-bottom:14px;overflow:hidden;}
+.prog-fill{height:100%;background:linear-gradient(90deg,var(--vert),var(--jaune));border-radius:2px;transition:width .4s;}
+
+/* Timer */
+.timer-wrap{display:flex;align-items:center;justify-content:center;margin-bottom:14px;}
+.timer-ring-wrap{position:relative;width:72px;height:72px;}
+.timer-svg{transform:rotate(-90deg);}
+.timer-bg{fill:none;stroke:var(--card2);stroke-width:6;}
+.timer-arc{fill:none;stroke:var(--jaune);stroke-width:6;stroke-linecap:round;transition:stroke-dashoffset .9s linear,stroke .3s;}
+.timer-num{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:20px;font-weight:700;color:var(--jaune);}
+
+/* Langue toggle */
+.lang-toggle{display:flex;background:var(--card2);border:1px solid var(--border);border-radius:10px;overflow:hidden;margin-bottom:12px;align-self:flex-start;}
+.lang-btn{padding:5px 16px;font-size:12px;font-weight:600;cursor:pointer;border:none;background:none;color:var(--muted);font-family:'DM Sans',sans-serif;transition:all .15s;}
+.lang-btn.active{background:var(--vert);color:#fff;}
+
+.cat-tag{display:inline-flex;align-items:center;padding:3px 12px;border-radius:20px;font-size:10px;font-weight:600;letter-spacing:.5px;text-transform:uppercase;margin-bottom:10px;border:1px solid;}
+.tag-h{background:rgba(0,122,94,.15);color:#5fcfaa;border-color:rgba(95,207,170,.25);}
+.tag-c{background:rgba(252,209,22,.1);color:#e8b84b;border-color:rgba(232,184,75,.25);}
+.tag-s{background:rgba(206,17,38,.12);color:#f07070;border-color:rgba(240,112,112,.25);}
+.tag-r{background:rgba(100,150,200,.1);color:#7ab8e8;border-color:rgba(122,184,232,.25);}
+.tag-t{background:rgba(180,100,200,.1);color:#c08ae8;border-color:rgba(192,138,232,.25);}
+
+/* Question bilingue */
+.q-bilingual{width:100%;margin-bottom:18px;}
+.q-fr{font-family:'Playfair Display',serif;font-size:18px;line-height:1.45;color:var(--text);margin-bottom:6px;}
+.q-en{font-family:'Playfair Display',serif;font-size:15px;line-height:1.4;color:rgba(255,255,255,0.45);font-style:italic;}
+.q-bilingual.en-mode .q-fr{font-size:15px;color:rgba(255,255,255,0.45);font-style:italic;}
+.q-bilingual.en-mode .q-en{font-size:18px;color:var(--text);font-style:normal;}
+
+.options{width:100%;display:flex;flex-direction:column;gap:8px;}
+.opt{background:var(--card2);border:1.5px solid var(--border);border-radius:12px;padding:11px 14px;font-size:13px;color:var(--text);cursor:pointer;text-align:left;display:flex;align-items:flex-start;gap:10px;font-family:'DM Sans',sans-serif;transition:border-color .15s,background .15s;}
+.opt:active:not(.locked){background:rgba(255,255,255,.04);}
+.opt-letter{width:24px;height:24px;border-radius:6px;background:rgba(255,255,255,.07);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:600;color:var(--muted);flex-shrink:0;margin-top:1px;}
+.opt-texts{display:flex;flex-direction:column;gap:2px;}
+.opt-fr{font-size:13px;color:var(--text);}
+.opt-en{font-size:11px;color:rgba(255,255,255,0.38);font-style:italic;}
+.opt.selected{border-color:var(--jaune);background:rgba(252,209,22,.08);}
+.opt.selected .opt-letter{background:var(--jaune-d);color:#fff;border-color:var(--jaune);}
+.opt.locked{cursor:default;}
+@keyframes blink{0%,100%{opacity:1;}50%{opacity:0.35;}}
+
+/* ── RÉVÉLATION ── */
+#s-reveal{justify-content:flex-start;padding:0;overflow:hidden;}
+.reveal-header{width:100%;padding:16px 18px 12px;background:var(--card);border-bottom:1px solid var(--border);flex-shrink:0;}
+.reveal-top{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:8px;gap:10px;}
+.reveal-title{font-family:'Playfair Display',serif;font-size:20px;color:var(--jaune);line-height:1.2;}
+.reveal-title-en{font-size:11px;color:rgba(252,209,22,0.5);font-style:italic;margin-top:2px;}
+.reveal-wave{font-size:11px;color:var(--muted);text-align:right;flex-shrink:0;}
+.reveal-score-row{display:flex;align-items:center;gap:8px;}
+.reveal-score-lbl{font-size:12px;color:var(--muted);}
+.reveal-score-val{font-size:14px;font-weight:600;color:var(--text);}
+.reveal-list{flex:1;overflow-y:auto;padding:12px 18px;width:100%;}
+.reveal-item{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:12px 14px;margin-bottom:10px;}
+.reveal-q-fr{font-size:13px;font-weight:500;color:var(--text);line-height:1.4;margin-bottom:2px;}
+.reveal-q-en{font-size:11px;color:rgba(255,255,255,0.38);font-style:italic;margin-bottom:10px;line-height:1.3;}
+.reveal-opts{display:flex;flex-direction:column;gap:5px;}
+.ropt{display:flex;align-items:flex-start;gap:8px;padding:7px 10px;border-radius:8px;font-size:12px;}
+.ropt.correct{background:rgba(0,122,94,.2);color:#5fcfaa;}
+.ropt.wrong{background:rgba(206,17,38,.15);color:#f08080;}
+.ropt.neutral{color:var(--muted);}
+.ropt-ico{width:16px;height:16px;border-radius:4px;display:flex;align-items:center;justify-content:center;font-size:10px;flex-shrink:0;margin-top:1px;}
+.ropt.correct .ropt-ico{background:var(--vert);color:#fff;}
+.ropt.wrong .ropt-ico{background:var(--rouge);color:#fff;}
+.ropt.neutral .ropt-ico{background:rgba(255,255,255,.1);color:var(--muted);}
+.ropt-texts{display:flex;flex-direction:column;gap:1px;}
+.ropt-fr{font-size:12px;}
+.ropt-en{font-size:10px;opacity:.6;font-style:italic;}
+.reveal-expl-fr{margin-top:8px;padding:7px 10px;background:rgba(252,209,22,.07);border-left:2px solid var(--jaune);border-radius:0 8px 8px 0;font-size:11px;color:rgba(255,255,255,.65);line-height:1.6;margin-bottom:4px;}
+.reveal-expl-en{padding:6px 10px;background:rgba(0,122,94,.07);border-left:2px solid rgba(0,168,118,.4);border-radius:0 8px 8px 0;font-size:11px;color:rgba(255,255,255,.45);font-style:italic;line-height:1.5;}
+.reveal-footer{width:100%;padding:12px 18px;background:var(--card);border-top:1px solid var(--border);flex-shrink:0;}
+.btn-continue{width:100%;background:var(--vert);color:#fff;border:none;border-radius:12px;padding:14px;font-size:15px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;}
+
+/* ── FINAL ── */
+#s-final{gap:14px;text-align:center;padding:20px 18px;justify-content:flex-start;overflow-y:auto;}
+.final-title{font-family:'Playfair Display',serif;font-size:24px;color:var(--jaune);margin-top:6px;}
+.final-title-en{font-size:14px;color:rgba(252,209,22,0.5);font-style:italic;margin-top:2px;}
+.score-ring{position:relative;width:130px;height:130px;margin:0 auto;}
+.score-ring-svg{transform:rotate(-90deg);}
+.score-ring-bg{fill:none;stroke:var(--card2);stroke-width:10;}
+.score-ring-fill{fill:none;stroke:var(--jaune);stroke-width:10;stroke-linecap:round;transition:stroke-dashoffset 1.2s ease;}
+.score-ring-txt{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;}
+.score-big{font-size:34px;font-weight:700;color:var(--jaune);}
+.score-tot{font-size:12px;color:var(--muted);}
+.final-msg{font-size:13px;line-height:1.7;color:var(--text);max-width:340px;}
+.final-msg-en{font-size:12px;line-height:1.6;color:var(--muted);font-style:italic;max-width:340px;}
+.final-cats{display:grid;grid-template-columns:1fr 1fr;gap:8px;width:100%;}
+.final-cat{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:10px 12px;}
+.final-cat-name{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:5px;}
+.final-cat-bar-wrap{height:4px;background:var(--border);border-radius:2px;margin-bottom:4px;overflow:hidden;}
+.final-cat-bar{height:100%;border-radius:2px;transition:width 1s ease;}
+.final-cat-sc{font-size:12px;font-weight:600;color:var(--text);}
+.final-btns{display:flex;gap:8px;width:100%;}
+.btn-replay{flex:1;background:var(--vert);color:#fff;border:none;border-radius:12px;padding:14px;font-size:14px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;}
+.btn-copy{flex:1;background:var(--card);color:var(--text);border:1px solid var(--border);border-radius:12px;padding:14px;font-size:14px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;}
+</style>
 </head>
 <body>
-    <main class="container mt-3">
-        <p class="display-6 text-center">GESTION DE GIT</p>
-        <section class="row">
-            <div class="col-md-6 col-lg-3">
-                <div class="card mb-3" >
-                    <img src="images/bou1.jpg" class="card-img-top" alt="...">
-                    <div class="card-body">
-                        <p class="card-text">Some quick example text to build on the card title and make up the bulk of the card's content.</p>
-                    </div>
-                </div>
-            </div>
-            <div class="col-md-6 col-lg-3">
-                <div class="card mb-3" >
-                    <img src="images/bou2.jpg" class="card-img-top" alt="...">
-                    <div class="card-body">
-                        <p class="card-text">Some quick example text to build on the card title and make up the bulk of the card's content.</p>
-                    </div>
-                </div>
-            </div>
-            <div class="col-md-6 col-lg-3">
-                <div class="card mb-3" >
-                    <img src="images/bou3.jpg" class="card-img-top" alt="...">
-                    <div class="card-body">
-                        <p class="card-text">Some quick example text to build on the card title and make up the bulk of the card's content.</p>
-                    </div>
-                </div>
-            </div>
-            <div class="col-md-6 col-lg-3">
-                <div class="card mb-3" >
-                    <img src="images/bou4.jpg" class="card-img-top" alt="...">
-                    <div class="card-body">
-                        <p class="card-text">Some quick example text to build on the card title and make up the bulk of the card's content.</p>
-                    </div>
-                </div>
-            </div>
-        </section>
-        <p class="text-center mt-5 border shadow">NOS SERVICES</p>
-        <p class="text-center mt-5 border shadow">UPDATE 1</p>
-        <p class="text-center mt-5 border shadow">UPDATE 2</p>
 
-        <p class="mt-5 border shadow border-primary  border-3 p-3" style="width: 500px; height: 500px;text-align: justify;overflow-y: scroll">Lorem ipsum dolor sit amet, consectetur adipisicing elit. Ab beatae consectetur eos error eveniet ex facilis iusto labore laboriosam magnam maiores minus mollitia nisi provident quaerat quidem rem repellat reprehenderit, similique totam ullam vel vitae voluptates? Architecto blanditiis eius eum fugiat hic impedit inventore itaque labore nemo neque possimus quaerat quas, quibusdam rem repellat voluptas voluptatum? Amet blanditiis molestias officiis reprehenderit! Animi aspernatur blanditiis consectetur cum dolores ducimus esse harum id illum impedit, iusto molestias nostrum odit omnis quidem tenetur velit voluptatibus. Blanditiis consequuntur culpa doloremque ea eligendi facere fugit in molestiae mollitia nihil non officia officiis optio placeat possimus quae, quas, reiciendis sit voluptatem voluptatum. Ad aliquam labore praesentium quas tenetur ullam voluptatum? Amet consequuntur delectus dolor dolores, eaque enim esse ex facilis harum illo ipsa itaque magni maiores maxime molestias nemo nisi nobis perspiciatis porro quos repudiandae tempora voluptatem. Ex fugit hic illum odio reprehenderit temporibus voluptatum. Aut dicta nostrum obcaecati officia quos. A aperiam at consequatur, distinctio dolorum maxime, nobis placeat quasi saepe tenetur vel veniam voluptatem voluptatibus. Accusantium adipisci est facilis, nam praesentium quis unde? Dignissimos dolorem dolores doloribus earum esse eveniet fugit, nam neque pariatur provident quam, quia quis repellat reprehenderit repudiandae soluta temporibus totam vero? Accusamus commodi distinctio ea eum expedita hic iure libero minus pariatur porro possimus ratione saepe tempora veniam, voluptatibus. A at corporis cumque dicta dolor, enim esse et excepturi iusto magni mollitia non omnis optio possimus quae quas quibusdam quos recusandae rerum soluta. Accusamus et laudantium perferendis rem veniam voluptas voluptatibus voluptatum. Ab ad adipisci aspernatur commodi cumque distinctio enim eum expedita explicabo harum in possimus quam quisquam, quod recusandae reprehenderit ullam. Ad aliquid animi at consequatur culpa delectus dolor doloremque dolores eaque eius eligendi esse, fugit, hic incidunt laboriosam libero maiores non porro quibusdam quis quod reiciendis saepe sed soluta suscipit totam ut. A alias, aliquam, corporis debitis deserunt dolorum eaque est explicabo fuga impedit incidunt inventore, laudantium placeat provident quisquam. Ad aliquid animi asperiores aspernatur at, beatae corporis delectus dignissimos dolorum esse eum fugiat fugit hic impedit ipsam labore magnam molestias natus neque non nostrum omnis perspiciatis quas qui quis quisquam recusandae reiciendis rem repellendus sapiente, sint sit temporibus ullam unde voluptatem voluptatibus voluptatum. Ad architecto at beatae cupiditate deleniti dignissimos ea eligendi et eum facilis, fugit illum impedit inventore iste itaque laboriosam laborum laudantium nam odio perferendis perspiciatis quae quis ratione reprehenderit repudiandae sint tenetur unde veritatis vitae voluptate. Accusamus beatae, eligendi esse, illum ipsam natus odio pariatur placeat possimus praesentium quidem rem voluptatibus! Architecto, consequatur debitis distinctio dolor doloremque, enim eveniet impedit inventore ipsum maiores quae quasi qui quia saepe tempora? Adipisci amet asperiores autem blanditiis commodi dolorem dolores doloribus, eligendi esse eveniet, expedita explicabo fuga fugit id ipsam ipsum iure labore maiores molestiae nam non, obcaecati officiis omnis optio pariatur porro quaerat quam quas ratione recusandae rem repellat sapiente soluta sunt tempore totam velit. Alias aliquid dolore dolores ea incidunt iure, iusto labore minus molestiae mollitia nisi odio odit quidem ratione repellendus sint voluptatum! Consectetur.</p>
-    </main>
-    <script src="js/all.min.js"></script>
-    <script src="js/bootstrap.bundle.min.js"></script>
+<!-- ACCUEIL -->
+<div class="screen active" id="s-home">
+  <div class="flag"><span class="fv"></span><span class="fr"></span><span class="fy">★</span></div>
+  <div class="home-title">Quiz — 20 Mai</div>
+  <div class="home-title-en">National Unity Day Quiz</div>
+  <div class="home-sub">Fête de l'Unité Nationale du Cameroun</div>
+  <div class="home-date">🦁 GALA OFFICIEL · OFFICIAL GALA</div>
+  <div class="waves-info">
+    <div class="wave-box"><div class="wave-num">1</div><div class="wave-lbl">Vague 1 / Wave 1</div><div class="wave-cat">Histoire &amp; Politique<br>History &amp; Politics</div></div>
+    <div class="wave-box"><div class="wave-num">2</div><div class="wave-lbl">Vague 2 / Wave 2</div><div class="wave-cat">Culture &amp; Traditions</div></div>
+    <div class="wave-box"><div class="wave-num">3</div><div class="wave-lbl">Vague 3 / Wave 3</div><div class="wave-cat">Sport &amp; Régions<br>Sport &amp; Regions</div></div>
+  </div>
+  <button class="btn-start" onclick="initQuiz()">▶ &nbsp; Commencer / Start</button>
+</div>
+
+<!-- INTRO VAGUE -->
+<div class="screen" id="s-wave-intro">
+  <div class="wave-intro-badge" id="wi-badge">VAGUE 1 / 3</div>
+  <div class="wave-intro-title" id="wi-title-fr">Vague 1</div>
+  <div class="wave-intro-title-en" id="wi-title-en">Wave 1</div>
+  <div class="wave-intro-sub" id="wi-sub">10 questions · 30 secondes chacune / 30 seconds each</div>
+  <div class="wave-intro-cats" id="wi-cats"></div>
+  <button class="btn-go" onclick="startWave()">C'est parti ! / Let's go! →</button>
+</div>
+
+<!-- QUESTION -->
+<div class="screen" id="s-question">
+  <div class="q-topbar" style="width:100%">
+    <div class="q-wave-lbl" id="q-wave-lbl">Vague 1</div>
+    <div class="q-counter" id="q-counter">Q 1/10</div>
+  </div>
+  <div class="prog-bar" style="width:100%"><div class="prog-fill" id="prog-fill" style="width:0%"></div></div>
+  <div class="timer-wrap">
+    <div class="timer-ring-wrap">
+      <svg class="timer-svg" width="72" height="72" viewBox="0 0 72 72">
+        <circle class="timer-bg" cx="36" cy="36" r="30"/>
+        <circle class="timer-arc" id="timer-arc" cx="36" cy="36" r="30" stroke-dasharray="188.5" stroke-dashoffset="0"/>
+      </svg>
+      <div class="timer-num" id="timer-num">30</div>
+    </div>
+  </div>
+  <div style="display:flex;align-items:center;justify-content:space-between;width:100%;margin-bottom:8px;">
+    <span class="cat-tag" id="cat-tag"></span>
+    <div class="lang-toggle">
+      <button class="lang-btn active" id="lang-fr" onclick="setLang('fr')">FR</button>
+      <button class="lang-btn" id="lang-en" onclick="setLang('en')">EN</button>
+    </div>
+  </div>
+  <div class="q-bilingual" id="q-bilingual">
+    <div class="q-fr" id="q-fr"></div>
+    <div class="q-en" id="q-en"></div>
+  </div>
+  <div class="options" id="options"></div>
+</div>
+
+<!-- RÉVÉLATION -->
+<div class="screen" id="s-reveal">
+  <div class="reveal-header">
+    <div class="reveal-top">
+      <div>
+        <div class="reveal-title" id="rev-title-fr">Réponses — Vague 1</div>
+        <div class="reveal-title-en" id="rev-title-en">Answers — Wave 1</div>
+      </div>
+      <div class="reveal-wave" id="rev-wave">Q1–10</div>
+    </div>
+    <div class="reveal-score-row">
+      <span class="reveal-score-lbl">Score cette vague / This wave:</span>
+      <span class="reveal-score-val" id="rev-score-val">0 / 10</span>
+    </div>
+  </div>
+  <div class="reveal-list" id="reveal-list"></div>
+  <div class="reveal-footer">
+    <button class="btn-continue" id="btn-continue" onclick="afterReveal()">→</button>
+  </div>
+</div>
+
+<!-- RÉSULTAT FINAL -->
+<div class="screen" id="s-final">
+  <div class="final-title">Résultat Final 🏆</div>
+  <div class="final-title-en">Final Result</div>
+  <div class="score-ring">
+    <svg class="score-ring-svg" width="130" height="130" viewBox="0 0 130 130">
+      <circle class="score-ring-bg" cx="65" cy="65" r="54"/>
+      <circle class="score-ring-fill" id="final-ring" cx="65" cy="65" r="54" stroke-dasharray="339.3" stroke-dashoffset="339.3"/>
+    </svg>
+    <div class="score-ring-txt"><div class="score-big" id="final-score">0</div><div class="score-tot" id="final-tot">/ 30</div></div>
+  </div>
+  <div class="final-msg" id="final-msg"></div>
+  <div class="final-msg-en" id="final-msg-en"></div>
+  <div class="final-cats" id="final-cats"></div>
+  <div class="final-btns">
+    <button class="btn-replay" onclick="restart()">↺ Rejouer / Replay</button>
+    <button class="btn-copy" onclick="copyScore()">📋 Score</button>
+  </div>
+</div>
+
+<script>
+const TIMER_DURATION = 30;
+const CIRCUMFERENCE = 2 * Math.PI * 30;
+
+const WAVES = [
+  {
+    labelFr:"Vague 1", labelEn:"Wave 1",
+    subFr:"Histoire & Politique", subEn:"History & Politics",
+    cats:["📜 Histoire / History","🏛️ Politique / Politics"],
+    questions:[
+      {cat:"h",
+       qFr:"Quelle date marque l'Indépendance du Cameroun francophone ?",
+       qEn:"What date marks the independence of French-speaking Cameroon?",
+       oFr:["1er octobre 1961","20 mai 1972","1er janvier 1960","15 août 1960"],
+       oEn:["1st October 1961","20th May 1972","1st January 1960","15th August 1960"],
+       a:2,
+       eFr:"Le 1er janvier 1960, le Cameroun français accède à l'indépendance, mettant fin au mandat français de la SDN.",
+       eEn:"On January 1st 1960, French Cameroon gained independence, ending the French League of Nations mandate."},
+      {cat:"h",
+       qFr:"Qui fut le premier Président du Cameroun indépendant ?",
+       qEn:"Who was the first President of independent Cameroon?",
+       oFr:["Paul Biya","Ruben Um Nyobè","John Ngu Foncha","Ahmadou Ahidjo"],
+       oEn:["Paul Biya","Ruben Um Nyobè","John Ngu Foncha","Ahmadou Ahidjo"],
+       a:3,
+       eFr:"Ahmadou Ahidjo devient le 1er Président du Cameroun en 1960 et dirige le pays jusqu'en 1982.",
+       eEn:"Ahmadou Ahidjo became Cameroon's 1st President in 1960 and led the country until 1982."},
+      {cat:"h",
+       qFr:"Quelle puissance coloniale a administré le Cameroun en premier ?",
+       qEn:"Which colonial power first administered Cameroon?",
+       oFr:["France","Portugal","Royaume-Uni","Allemagne"],
+       oEn:["France","Portugal","United Kingdom","Germany"],
+       a:3,
+       eFr:"L'Allemagne colonise le Kamerun dès le 12 juillet 1884 après le traité signé à Douala.",
+       eEn:"Germany colonised Kamerun from July 12th 1884, following the treaty signed in Douala."},
+      {cat:"h",
+       qFr:"Le 1er octobre 1961 marque quel événement historique majeur ?",
+       qEn:"What major historical event took place on October 1st 1961?",
+       oFr:["L'adhésion à l'ONU","L'adoption de la Constitution","La Réunification du Cameroun","La création de l'UPC"],
+       oEn:["Joining the UN","Adoption of the Constitution","The Reunification of Cameroon","Creation of the UPC"],
+       a:2,
+       eFr:"Le Southern Cameroons rejoint la République du Cameroun pour former la République Fédérale du Cameroun.",
+       eEn:"Southern Cameroons joined the Republic of Cameroon to form the Federal Republic of Cameroon."},
+      {cat:"h",
+       qFr:"Quel pourcentage de OUI obtient le référendum du 20 Mai 1972 ?",
+       qEn:"What percentage voted YES in the May 20th 1972 referendum?",
+       oFr:["80,5 %","94,2 %","88,3 %","99,97 %"],
+       oEn:["80.5%","94.2%","88.3%","99.97%"],
+       a:3,
+       eFr:"99,97 % des Camerounais votent OUI pour transformer la République Fédérale en République Unie.",
+       eEn:"99.97% of Cameroonians voted YES to transform the Federal Republic into the United Republic."},
+      {cat:"h",
+       qFr:"En quelle année le Cameroun est-il admis à l'ONU ?",
+       qEn:"In which year did Cameroon join the United Nations?",
+       oFr:["1958","1962","1960","1961"],
+       oEn:["1958","1962","1960","1961"],
+       a:2,
+       eFr:"Le Cameroun est admis à l'Organisation des Nations Unies le 20 septembre 1960.",
+       eEn:"Cameroon was admitted to the United Nations on September 20th 1960."},
+      {cat:"h",
+       qFr:"John Ngu Foncha était leader de quelle région lors de la Réunification ?",
+       qEn:"John Ngu Foncha was the leader of which territory during Reunification?",
+       oFr:["Cameroun Oriental","Northern Cameroons","Cameroun Central","Southern Cameroons"],
+       oEn:["Eastern Cameroon","Northern Cameroons","Central Cameroon","Southern Cameroons"],
+       a:3,
+       eFr:"John Ngu Foncha, Premier Ministre du Southern Cameroons, négocie la réunification avec Ahidjo en 1961.",
+       eEn:"John Ngu Foncha, Prime Minister of Southern Cameroons, negotiated reunification with Ahidjo in 1961."},
+      {cat:"h",
+       qFr:"En quelle année Paul Biya succède-t-il à Ahmadou Ahidjo ?",
+       qEn:"In which year did Paul Biya succeed Ahmadou Ahidjo?",
+       oFr:["1980","1984","1981","1982"],
+       oEn:["1980","1984","1981","1982"],
+       a:3,
+       eFr:"Paul Biya succède à Ahmadou Ahidjo le 6 novembre 1982 et dirige le Cameroun depuis cette date.",
+       eEn:"Paul Biya succeeded Ahmadou Ahidjo on November 6th 1982 and has led Cameroon since."},
+      {cat:"h",
+       qFr:"Quel nom porta le Cameroun après le référendum de 1972 ?",
+       qEn:"What name did Cameroon bear after the 1972 referendum?",
+       oFr:["République Fédérale","Union Camerounaise","République Unie du Cameroun","République du Cameroun"],
+       oEn:["Federal Republic","Cameroonian Union","United Republic of Cameroon","Republic of Cameroon"],
+       a:2,
+       eFr:"La République Unie du Cameroun est proclamée en 1972. Le nom « République du Cameroun » sera restauré en 1984.",
+       eEn:"The United Republic of Cameroon was proclaimed in 1972. The name 'Republic of Cameroon' was restored in 1984."},
+      {cat:"h",
+       qFr:"L'UPC, premier parti nationaliste camerounais, est fondée en quelle année ?",
+       qEn:"In which year was the UPC, Cameroon's first nationalist party, founded?",
+       oFr:["1945","1955","1952","1948"],
+       oEn:["1945","1955","1952","1948"],
+       a:3,
+       eFr:"L'Union des Populations du Cameroun (UPC) est fondée le 10 avril 1948. Elle revendique l'indépendance et la réunification.",
+       eEn:"The Union of the Peoples of Cameroon (UPC) was founded on April 10th 1948, demanding independence and reunification."},
+    ]
+  },
+  {
+    labelFr:"Vague 2", labelEn:"Wave 2",
+    subFr:"Culture & Traditions", subEn:"Culture & Traditions",
+    cats:["🎭 Culture","🌿 Traditions"],
+    questions:[
+      {cat:"c",
+       qFr:"Quel est le surnom international du Cameroun ?",
+       qEn:"What is Cameroon's international nickname?",
+       oFr:["Le Lion d'Afrique","La Perle de l'Afrique","L'Afrique en miniature","Le Cœur vert"],
+       oEn:["The Lion of Africa","The Pearl of Africa","Africa in miniature","The Green Heart"],
+       a:2,
+       eFr:"Le Cameroun est surnommé « L'Afrique en miniature » car il concentre tous les paysages et peuples du continent.",
+       eEn:"Cameroon is nicknamed 'Africa in miniature' because it contains every type of landscape and people found on the continent."},
+      {cat:"c",
+       qFr:"Quel est le plat national camerounais le plus célèbre ?",
+       qEn:"What is Cameroon's most famous national dish?",
+       oFr:["L'Eru","Le Koki","Le Mbongo Tchobi","Le Ndolé"],
+       oEn:["Eru","Koki","Mbongo Tchobi","Ndolé"],
+       a:3,
+       eFr:"Le Ndolé, à base de feuilles amères, de poisson ou viande et d'arachides, est le plat emblématique du Cameroun.",
+       eEn:"Ndolé, made with bitter leaves, fish or meat and peanuts, is Cameroon's most iconic dish."},
+      {cat:"c",
+       qFr:"Le Makossa est associé à quelle ville camerounaise ?",
+       qEn:"The Makossa music style is associated with which Cameroonian city?",
+       oFr:["Yaoundé","Garoua","Bafoussam","Douala"],
+       oEn:["Yaoundé","Garoua","Bafoussam","Douala"],
+       a:3,
+       eFr:"Le Makossa est né à Douala dans les années 1950–60, popularisé mondialement par Manu Dibango.",
+       eEn:"Makossa was born in Douala in the 1950s–60s, brought to global fame by Manu Dibango."},
+      {cat:"c",
+       qFr:"La danse Bikutsi est originaire de quelle ethnie ?",
+       qEn:"The Bikutsi dance originates from which ethnic group?",
+       oFr:["Bamiléké","Fula","Bassa","Beti / Ewondo"],
+       oEn:["Bamiléké","Fula","Bassa","Beti / Ewondo"],
+       a:3,
+       eFr:"Le Bikutsi est une danse et musique traditionnelle du peuple Beti (Ewondo, Bulu) du Centre et Sud-Cameroun.",
+       eEn:"Bikutsi is a traditional dance and music of the Beti people (Ewondo, Bulu) from Central and South Cameroon."},
+      {cat:"c",
+       qFr:"Quelle est la devise officielle du Cameroun ?",
+       qEn:"What is Cameroon's official motto?",
+       oFr:["Unité – Travail – Progrès","Force – Honneur – Nation","Liberté – Égalité – Justice","Paix – Travail – Patrie"],
+       oEn:["Unity – Work – Progress","Strength – Honour – Nation","Freedom – Equality – Justice","Peace – Work – Fatherland"],
+       a:3,
+       eFr:"La devise officielle est « Paix – Travail – Patrie », symbole des valeurs fondamentales de la Nation.",
+       eEn:"The official motto is 'Peace – Work – Fatherland', a symbol of the Nation's core values."},
+      {cat:"c",
+       qFr:"Combien de groupes ethniques compte le Cameroun ?",
+       qEn:"How many ethnic groups does Cameroon have?",
+       oFr:["Environ 80","Environ 150","Plus de 400","Environ 280"],
+       oEn:["About 80","About 150","More than 400","About 280"],
+       a:3,
+       eFr:"On dénombre environ 280 groupes ethniques au Cameroun, l'un des pays les plus diversifiés d'Afrique.",
+       eEn:"Cameroon has approximately 280 ethnic groups, making it one of Africa's most diverse countries."},
+      {cat:"c",
+       qFr:"Quelle est la deuxième langue officielle du Cameroun après le français ?",
+       qEn:"What is Cameroon's second official language alongside French?",
+       oFr:["Portugais","Haoussa","Arabe","Anglais"],
+       oEn:["Portuguese","Hausa","Arabic","English"],
+       a:3,
+       eFr:"Le Cameroun est bilingue français-anglais depuis la Réunification de 1961. NW et SW sont les régions anglophones.",
+       eEn:"Cameroon has been bilingual French-English since the 1961 Reunification. The NW and SW regions are anglophone."},
+      {cat:"t",
+       qFr:"L'artisanat des trônes sculptés est une tradition de quel peuple ?",
+       qEn:"Carved royal thrones are a traditional craft of which people?",
+       oFr:["Beti","Fula","Kotoko","Bamiléké"],
+       oEn:["Beti","Fula","Kotoko","Bamiléké"],
+       a:3,
+       eFr:"Les trônes royaux sculptés sont une tradition emblématique du peuple Bamiléké des hauts plateaux de l'Ouest.",
+       eEn:"Carved royal thrones are an iconic tradition of the Bamiléké people of the Western Highlands."},
+      {cat:"t",
+       qFr:"Le « Nguon » est le grand festival traditionnel de quel peuple ?",
+       qEn:"The 'Nguon' is the great traditional festival of which people?",
+       oFr:["Bamiléké","Bassa","Fula","Bamoun"],
+       oEn:["Bamiléké","Bassa","Fula","Bamoun"],
+       a:3,
+       eFr:"Le Nguon est la grande fête du peuple Bamoun du Noun, classé au patrimoine culturel immatériel de l'UNESCO.",
+       eEn:"The Nguon is the great feast of the Bamoun people of Noun, listed as UNESCO Intangible Cultural Heritage."},
+      {cat:"t",
+       qFr:"Le Toghu est un tissu traditionnel emblématique de quelle région ?",
+       qEn:"The Toghu is an iconic traditional fabric from which region?",
+       oFr:["Région du Centre","Région du Littoral","Région de l'Ouest","Région du Nord-Ouest"],
+       oEn:["Centre Region","Littoral Region","West Region","North-West Region"],
+       a:3,
+       eFr:"Le Toghu, tissu de velours brodé noir aux motifs colorés, est le tissu traditionnel de la région du Nord-Ouest.",
+       eEn:"Toghu, a black embroidered velvet fabric with colourful patterns, is the traditional fabric of the North-West Region."},
+    ]
+  },
+  {
+    labelFr:"Vague 3", labelEn:"Wave 3",
+    subFr:"Sport & Régions", subEn:"Sport & Regions",
+    cats:["⚽ Sport","🗺️ Régions / Regions"],
+    questions:[
+      {cat:"s",
+       qFr:"Quel surnom porte l'équipe nationale de football du Cameroun ?",
+       qEn:"What is the nickname of Cameroon's national football team?",
+       oFr:["Les Lions Noirs","Les Aigles Verts","Les Lions Indomptables","Les Éléphants Rouges"],
+       oEn:["The Black Lions","The Green Eagles","The Indomitable Lions","The Red Elephants"],
+       a:2,
+       eFr:"Les « Lions Indomptables » symbolisent la force, le courage et la fierté nationale camerounaise.",
+       eEn:"The 'Indomitable Lions' symbolise Cameroonian strength, courage and national pride."},
+      {cat:"s",
+       qFr:"En quelle année le Cameroun atteint-il les quarts de finale de la Coupe du Monde ?",
+       qEn:"In which year did Cameroon reach the FIFA World Cup quarter-finals?",
+       oFr:["1982","1986","1994","1990"],
+       oEn:["1982","1986","1994","1990"],
+       a:3,
+       eFr:"En 1990 en Italie, les Lions Indomptables atteignent les quarts de finale, une première historique pour l'Afrique.",
+       eEn:"In Italy 1990, the Indomitable Lions reached the quarter-finals — a historic first for any African team."},
+      {cat:"s",
+       qFr:"Roger Milla célébrait ses buts en dansant devant quoi ?",
+       qEn:"Roger Milla celebrated his goals by dancing near what?",
+       oFr:["Le ballon","La caméra","Le drapeau","Le poteau de corner"],
+       oEn:["The ball","The camera","The flag","The corner flag"],
+       a:3,
+       eFr:"Roger Milla dansait devant le poteau de corner. Cette image du Mondial 1990 est iconique dans l'histoire du football.",
+       eEn:"Roger Milla danced by the corner flag. This image from the 1990 World Cup is iconic in football history."},
+      {cat:"s",
+       qFr:"Combien de fois le Cameroun a-t-il remporté la CAN ?",
+       qEn:"How many times has Cameroon won the Africa Cup of Nations?",
+       oFr:["3 fois","4 fois","6 fois","5 fois"],
+       oEn:["3 times","4 times","6 times","5 times"],
+       a:3,
+       eFr:"Le Cameroun a remporté la CAN 5 fois (1984, 1988, 2000, 2002, 2017). Véritable record africain.",
+       eEn:"Cameroon has won the AFCON 5 times (1984, 1988, 2000, 2002, 2017) — a true African record."},
+      {cat:"s",
+       qFr:"Samuel Eto'o a remporté combien de fois la Ligue des Champions ?",
+       qEn:"How many times did Samuel Eto'o win the UEFA Champions League?",
+       oFr:["1 fois","2 fois","4 fois","3 fois"],
+       oEn:["1 time","2 times","4 times","3 times"],
+       a:3,
+       eFr:"Samuel Eto'o a remporté la LDC avec Barcelone (2006, 2009) et l'Inter Milan (2010). Un palmarès exceptionnel.",
+       eEn:"Samuel Eto'o won the Champions League with Barcelona (2006, 2009) and Inter Milan (2010). An exceptional record."},
+      {cat:"s",
+       qFr:"Samuel Eto'o a remporté le Ballon d'Or Africain combien de fois ?",
+       qEn:"How many times did Samuel Eto'o win the African Player of the Year award?",
+       oFr:["2 fois","3 fois","5 fois","4 fois"],
+       oEn:["2 times","3 times","5 times","4 times"],
+       a:3,
+       eFr:"Samuel Eto'o a remporté le Ballon d'Or Africain 4 fois (2003, 2004, 2005, 2010).",
+       eEn:"Samuel Eto'o won the African Player of the Year award 4 times (2003, 2004, 2005, 2010)."},
+      {cat:"r",
+       qFr:"Quelle est la capitale politique du Cameroun ?",
+       qEn:"What is the political capital of Cameroon?",
+       oFr:["Douala","Bafoussam","Garoua","Yaoundé"],
+       oEn:["Douala","Bafoussam","Garoua","Yaoundé"],
+       a:3,
+       eFr:"Yaoundé est la capitale politique et administrative. Surnommée « la ville aux 7 collines ». Douala est la capitale économique.",
+       eEn:"Yaoundé is the political and administrative capital, nicknamed 'the city of seven hills'. Douala is the economic capital."},
+      {cat:"r",
+       qFr:"Le Mont Cameroun culmine à quelle altitude ?",
+       qEn:"What is the altitude of Mount Cameroon?",
+       oFr:["3 200 m","3 895 m","4 500 m","4 095 m"],
+       oEn:["3,200 m","3,895 m","4,500 m","4,095 m"],
+       a:3,
+       eFr:"Le Mont Cameroun s'élève à 4 095 m. Volcan actif, c'est le point culminant d'Afrique de l'Ouest.",
+       eEn:"Mount Cameroon rises to 4,095 m. An active volcano, it is the highest peak in West Africa."},
+      {cat:"r",
+       qFr:"Combien de régions compte le Cameroun ?",
+       qEn:"How many regions does Cameroon have?",
+       oFr:["8 régions","12 régions","15 régions","10 régions"],
+       oEn:["8 regions","12 regions","15 regions","10 regions"],
+       a:3,
+       eFr:"Le Cameroun est divisé en 10 régions administratives depuis la décentralisation de 2008.",
+       eEn:"Cameroon is divided into 10 administrative regions since the 2008 decentralisation."},
+      {cat:"r",
+       qFr:"Quelle ville camerounaise est surnommée « la ville aux 7 collines » ?",
+       qEn:"Which Cameroonian city is nicknamed 'the city of seven hills'?",
+       oFr:["Douala","Bafoussam","Ngaoundéré","Yaoundé"],
+       oEn:["Douala","Bafoussam","Ngaoundéré","Yaoundé"],
+       a:3,
+       eFr:"Yaoundé est surnommée « la ville aux 7 collines » en raison de sa topographie caractéristique.",
+       eEn:"Yaoundé is nicknamed 'the city of seven hills' due to its distinctive hilly topography."},
+    ]
+  }
+];
+
+let waveIdx=0, qIdx=0, timerInt=null, timeLeft=0;
+let userAnswers=[], totalScore=0, currentLang='fr';
+const catScore={h:0,c:0,s:0,r:0,t:0};
+const catTotal={h:0,c:0,s:0,r:0,t:0};
+const catInfo={h:{n:"Histoire",col:"#5fcfaa"},c:{n:"Culture",col:"#e8b84b"},s:{n:"Sport",col:"#f07070"},r:{n:"Régions",col:"#7ab8e8"},t:{n:"Traditions",col:"#c08ae8"}};
+
+function show(id){document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));document.getElementById(id).classList.add('active');}
+function setLang(l){
+  currentLang=l;
+  document.getElementById('lang-fr').classList.toggle('active',l==='fr');
+  document.getElementById('lang-en').classList.toggle('active',l==='en');
+  document.getElementById('q-bilingual').classList.toggle('en-mode',l==='en');
+  document.querySelectorAll('.opt-en').forEach(e=>e.style.display=l==='en'?'block':'none');
+}
+
+function initQuiz(){
+  waveIdx=0;totalScore=0;currentLang='fr';
+  Object.keys(catScore).forEach(k=>{catScore[k]=0;catTotal[k]=0;});
+  WAVES.forEach(w=>w.questions.forEach(q=>catTotal[q.cat]++));
+  showWaveIntro();
+}
+
+function showWaveIntro(){
+  const w=WAVES[waveIdx];
+  document.getElementById('wi-badge').textContent=`VAGUE ${waveIdx+1} / 3 — WAVE ${waveIdx+1} / 3`;
+  document.getElementById('wi-title-fr').textContent=w.labelFr;
+  document.getElementById('wi-title-en').textContent=w.labelEn+' — '+w.subEn;
+  document.getElementById('wi-sub').textContent=`${w.subFr} · 10 questions · 30 secondes / 30 seconds each`;
+  const catsEl=document.getElementById('wi-cats');
+  catsEl.innerHTML='';
+  w.cats.forEach(c=>{const sp=document.createElement('span');sp.className='cat-pill';sp.textContent=c;catsEl.appendChild(sp);});
+  userAnswers=[];qIdx=0;
+  show('s-wave-intro');
+}
+
+function startWave(){show('s-question');renderQ();}
+
+function renderQ(){
+  const w=WAVES[waveIdx],q=w.questions[qIdx];
+  document.getElementById('q-wave-lbl').textContent=`${w.labelFr} / ${w.labelEn}`;
+  document.getElementById('q-counter').textContent=`Q ${qIdx+1}/10`;
+  document.getElementById('prog-fill').style.width=`${(qIdx/10)*100}%`;
+  const tag=document.getElementById('cat-tag');
+  tag.textContent=q.cat==='h'?'Histoire/History':q.cat==='c'?'Culture':q.cat==='s'?'Sport':q.cat==='r'?'Région/Region':'Tradition';
+  tag.className=`cat-tag tag-${q.cat}`;
+  document.getElementById('q-fr').textContent=q.qFr;
+  document.getElementById('q-en').textContent=q.qEn;
+  document.getElementById('q-bilingual').classList.toggle('en-mode',currentLang==='en');
+  const opts=document.getElementById('options');
+  opts.innerHTML='';
+  const letters=['A','B','C','D'];
+  q.oFr.forEach((fr,i)=>{
+    const b=document.createElement('button');
+    b.className='opt';b.dataset.idx=i;
+    b.innerHTML=`<span class="opt-letter">${letters[i]}</span><span class="opt-texts"><span class="opt-fr">${fr}</span><span class="opt-en" style="display:${currentLang==='en'?'block':'none'}">${q.oEn[i]}</span></span>`;
+    b.onclick=()=>selectAnswer(i,b,q);
+    opts.appendChild(b);
+  });
+  userAnswers[qIdx]=null;
+  startTimer();
+}
+
+function startTimer(){
+  clearInterval(timerInt);timeLeft=TIMER_DURATION;updateTimerUI(timeLeft);
+  timerInt=setInterval(()=>{timeLeft--;updateTimerUI(timeLeft);if(timeLeft<=0){clearInterval(timerInt);autoNext();}},1000);
+}
+function updateTimerUI(t){
+  const arc=document.getElementById('timer-arc'),num=document.getElementById('timer-num');
+  arc.style.strokeDashoffset=CIRCUMFERENCE*(1-t/TIMER_DURATION);
+  num.textContent=t;
+  const col=t<=5?'#CE1126':t<=10?'#FFA500':'#FCD116';
+  arc.style.stroke=col;num.style.color=col;
+}
+function selectAnswer(idx,btn,q){
+  if(userAnswers[qIdx]!==null)return;
+  userAnswers[qIdx]=idx;
+  // Verrouiller les options mais NE PAS arrêter le chrono
+  document.querySelectorAll('.opt').forEach(b=>b.classList.add('locked'));
+  btn.classList.add('selected');
+  // Afficher un message d'attente
+  showWaitMsg();
+  // Le timer continue — autoNext() sera appelé par le timer quand il arrive à 0
+}
+function showWaitMsg(){
+  let msg = document.getElementById('wait-msg');
+  if(!msg){
+    msg = document.createElement('div');
+    msg.id = 'wait-msg';
+    msg.style.cssText = 'text-align:center;font-size:12px;color:rgba(252,209,22,0.7);margin-top:10px;letter-spacing:1px;font-style:italic;animation:blink 1s ease-in-out infinite;';
+    msg.textContent = '⏳ En attente de la fin du temps... / Waiting for time to end...';
+    document.getElementById('options').after(msg);
+  }
+}
+function autoNext(){
+  clearInterval(timerInt);
+  const msg=document.getElementById('wait-msg');
+  if(msg)msg.remove();
+  if(qIdx<9){qIdx++;renderQ();}else{showReveal();}
+}
+
+function showReveal(){
+  const w=WAVES[waveIdx];let waveScore=0;
+  const list=document.getElementById('reveal-list');list.innerHTML='';
+  const letters=['A','B','C','D'];
+  w.questions.forEach((q,i)=>{
+    const chosen=userAnswers[i],isOk=chosen===q.a;
+    if(isOk){waveScore++;catScore[q.cat]++;}
+    const item=document.createElement('div');item.className='reveal-item';
+    let optsHTML='';
+    q.oFr.forEach((fr,oi)=>{
+      let cls=oi===q.a?'correct':(oi===chosen&&chosen!==q.a?'wrong':'neutral');
+      let ico=oi===q.a?'✓':(oi===chosen&&chosen!==q.a?'✗':letters[oi]);
+      optsHTML+=`<div class="ropt ${cls}"><div class="ropt-ico">${ico}</div><div class="ropt-texts"><div class="ropt-fr">${fr}</div><div class="ropt-en">${q.oEn[oi]}</div></div></div>`;
+    });
+    item.innerHTML=`<div class="reveal-q-fr">${i+1}. ${q.qFr}</div><div class="reveal-q-en">${q.qEn}</div><div class="reveal-opts">${optsHTML}</div><div class="reveal-expl-fr">💡 ${q.eFr}</div><div class="reveal-expl-en">💡 ${q.eEn}</div>`;
+    list.appendChild(item);
+  });
+  totalScore+=waveScore;
+  document.getElementById('rev-title-fr').textContent=`Réponses — ${w.labelFr}`;
+  document.getElementById('rev-title-en').textContent=`Answers — ${w.labelEn}`;
+  document.getElementById('rev-wave').textContent=`Q${waveIdx*10+1}–${waveIdx*10+10}`;
+  document.getElementById('rev-score-val').textContent=`${waveScore} / 10`;
+  const btn=document.getElementById('btn-continue');
+  btn.textContent=waveIdx<2?`Vague ${waveIdx+2} / Wave ${waveIdx+2} →`:'🏆 Résultat Final / Final Result';
+  show('s-reveal');
+}
+
+function afterReveal(){waveIdx++;if(waveIdx<3)showWaveIntro();else showFinal();}
+
+function showFinal(){
+  show('s-final');
+  const pct=Math.round(totalScore/30*100);
+  document.getElementById('final-score').textContent=totalScore;
+  setTimeout(()=>{document.getElementById('final-ring').style.strokeDashoffset=339.3*(1-totalScore/30);},300);
+  let fr='',en='',emoji='🦁';
+  if(pct>=90){emoji='🏆';fr='Exceptionnel ! Tu es un véritable ambassadeur du Cameroun !';en='Exceptional! You are a true ambassador of Cameroon!';}
+  else if(pct>=75){emoji='🥇';fr='Excellent ! Tu connais très bien l\'histoire et la culture camerounaises.';en='Excellent! You know Cameroonian history and culture very well.';}
+  else if(pct>=55){emoji='🥈';fr='Bien joué ! Tu as de solides bases sur le Cameroun.';en='Well done! You have solid knowledge of Cameroon.';}
+  else if(pct>=35){emoji='📚';fr='Pas mal ! Continue à explorer la richesse du Cameroun.';en='Not bad! Keep exploring the richness of Cameroon.';}
+  else{emoji='🌱';fr='Chaque question est une leçon sur la fierté camerounaise !';en='Every question is a lesson about Cameroonian pride!';}
+  document.getElementById('final-msg').textContent=`${emoji} ${fr}`;
+  document.getElementById('final-msg-en').textContent=en;
+  const catsEl=document.getElementById('final-cats');catsEl.innerHTML='';
+  Object.entries(catInfo).forEach(([k,cd])=>{
+    if(!catTotal[k])return;
+    const sc=catScore[k]||0,tot=catTotal[k],p=Math.round(sc/tot*100);
+    const card=document.createElement('div');card.className='final-cat';
+    card.innerHTML=`<div class="final-cat-name">${cd.n}</div><div class="final-cat-bar-wrap"><div class="final-cat-bar" style="width:0%;background:${cd.col}" data-p="${p}"></div></div><div class="final-cat-sc">${sc}/${tot} · ${p}%</div>`;
+    catsEl.appendChild(card);
+  });
+  setTimeout(()=>document.querySelectorAll('.final-cat-bar').forEach(b=>b.style.width=b.dataset.p+'%'),400);
+}
+
+function restart(){waveIdx=0;totalScore=0;Object.keys(catScore).forEach(k=>catScore[k]=0);show('s-home');}
+function copyScore(){
+  const txt=`🇨🇲 Quiz Cameroun 20 Mai / National Unity Day Quiz\nScore : ${totalScore}/30\nVive les Lions Indomptables! 🦁\nPaix – Travail – Patrie / Peace – Work – Fatherland`;
+  navigator.clipboard?.writeText(txt);alert('Score copié / Score copied!\n\n'+txt);
+}
+if('wakeLock' in navigator)navigator.wakeLock.request('screen').catch(()=>{});
+</script>
 </body>
 </html>
